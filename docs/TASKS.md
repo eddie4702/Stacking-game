@@ -11,7 +11,7 @@
 ## Milestone 1 — Project foundation
 
 ### TASK-001 — Create the Godot project foundation
-**Status:** READY
+**Status:** REVIEW
 
 **Goal:** Create a minimal, runnable Godot 4 project with a portrait-oriented main scene and a clean initial directory structure.
 
@@ -41,6 +41,12 @@
 - No future gameplay systems have been prematurely implemented.
 
 **Deliverable:** A runnable project foundation and a report of files created and tests performed.
+
+**Result (2026-11-26):** Implemented and awaiting owner review.
+- `project.godot` configured: 720x1280 portrait viewport, portrait handheld orientation, 405x720 desktop window override, main scene set. Existing stretch settings (`canvas_items` / `expand`) left unchanged.
+- `scenes/main/main.tscn` created: solid placeholder background plus a placeholder gameplay area. No scripts.
+- Tested with Godot 4.7-stable: project imports and runs headless with no errors or warnings; a software-rendered screenshot was inspected at several window sizes. Not tested on a real GPU, in the Godot editor UI, in a browser, or on a mobile device.
+- Known issues and items to verify manually are listed in the TASK-001 completion report and in `docs/CHANGELOG.md`.
 
 ### TASK-002 — Create a reusable pancake scene
 **Status:** PLANNED
@@ -317,6 +323,7 @@ These tasks must be separately designed and approved:
 - Wife's OC artwork integration.
 - Final pancake illustrations and visual effects.
 - Character animation.
+- Potential 2.5D visual presentation (pancakes with thickness, rounded edges and shading; lighting, shadows and depth; richer environment; more dimensional character; wobble and falling animations; camera effects). Future direction only: see `game_design.md` section 9.4 and `docs/TECHNICAL_DESIGN.md` section 13. This is not an authorized task, and prototype tasks must remain 2D.
 - Sound effects and music.
 - Polished UI and menus.
 - Coin economy and recovery.
@@ -329,6 +336,6 @@ These tasks must be separately designed and approved:
 
 ## Current authorization
 
-**Only TASK-001 is ready to be assigned.**
+**TASK-001 is implemented and awaiting owner review.** No other task is authorized.
 
 Do not start TASK-002 or any later task until the project owner reviews the completed foundation and explicitly approves the next step.

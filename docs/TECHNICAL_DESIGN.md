@@ -25,6 +25,7 @@ This document records the technical decisions that have been made. It is intenti
 5. Keep tunable gameplay values easy to find and adjust.
 6. Avoid premature systems for features that are not in the approved task.
 7. Keep the project runnable after each task.
+8. Keep gameplay coordinates, dimensions and rules independent of how pancakes are drawn, so the visual presentation can be replaced or upgraded later (see section 13).
 
 ## 3. Proposed repository layout
 
@@ -106,6 +107,8 @@ Interpretation:
 - If the moving pancake aligns within the configured perfect tolerance, it is a perfect placement and its full width is retained.
 - Otherwise, the overlap interval defines the remaining pancake.
 
+Gameplay coordinates and dimensions are the source of truth for these calculations. They must not be derived from visual node sizes, sprite bounds, physics bodies or 3D collisions, so the result is the same whatever the visual presentation.
+
 The exact coordinate representation and edge-case handling must be confirmed during implementation. Keep calculations independent enough to test with known input values.
 
 ## 6. Camera requirement
@@ -162,3 +165,49 @@ When an implementation decision changes the architecture or component responsibi
 4. Report the change to the project owner.
 
 Do not silently change a documented gameplay rule.
+
+---
+
+## 12. Current implementation state
+
+Updated after TASK-001. Describes what exists now, not what is planned.
+
+**Display settings (`project.godot`):**
+
+- Base viewport 720x1280 (portrait, 9:16).
+- Handheld orientation: portrait.
+- Desktop window override 405x720, so the window fits on typical monitors; this does not change the 720x1280 coordinate space.
+- Stretch mode `canvas_items`, aspect `expand`. Extra screen space on non-9:16 windows appears to the right and below the 720x1280 area.
+- Renderer: Mobile (unchanged from the generated project).
+
+**Main scene (`scenes/main/main.tscn`, no scripts):**
+
+```text
+Main (Node2D)
+├── Background (CanvasLayer, layer -1)
+│   └── BackgroundColor (ColorRect, full-screen)
+└── GameplayArea (ColorRect, placeholder, 600x960 at 60,160)
+```
+
+- The background sits on its own CanvasLayer so it stays fixed on screen and covers any window shape; this keeps it unaffected by a camera added later.
+- `GameplayArea` is a visual placeholder only. Its position and size are not final design decisions and carry no gameplay meaning yet.
+
+**Folders in use:** `scenes/main/`, `docs/`. Other folders in section 3 are created when a task needs them.
+
+---
+
+## 13. Future visual direction: 2.5D (not current scope)
+
+**Status:** Recorded direction only. Not an authorized task. No migration to 3D is planned for the prototype.
+
+The prototype and gameplay stay 2D. The longer-term goal, described in `game_design.md` section 9.4, is to potentially upgrade the game to a polished 2.5D presentation before release: thicker, rounded, shaded pancakes; lighting, shadows and depth; a richer environment; a more dimensional character; and more expressive animation and camera effects.
+
+**What this means for current work:**
+
+- Implement all prototype tasks in 2D. Do not add 3D nodes, perspective cameras, 3D models, dynamic lighting or 2.5D effects.
+- Do not add abstraction layers or placeholder systems "for later". The existing rules already cover what is needed.
+- Gameplay calculations (overlap, cutting, perfect placement, scoring, game over) use gameplay coordinates and dimensions only, as described in section 5.
+- A pancake's visuals are derived from its gameplay position and dimensions. This is consistent with the existing requirement that visual and gameplay dimensions stay synchronized; gameplay is the source of truth.
+- Visual reactions such as wobbling or falling are presentation only and must not change gameplay outcomes.
+
+**Not decided:** how a 2.5D presentation would be built (for example, enhanced 2D art or a separate 3D presentation driven by the same gameplay state). This should be evaluated after the core gameplay is validated, as a separately designed and approved task, with this document updated per section 11.
