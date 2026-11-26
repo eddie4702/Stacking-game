@@ -1,8 +1,10 @@
 # PANCAKE STACKER
 ## Game Design Document (GDD)
-**Version:** 0.1 — Draft  
+
+**Version:** 0.2 — Draft for Review  
 **Project status:** Pre-production  
 **Engine:** Godot 4  
+**Programming language:** GDScript  
 **Platforms:** Mobile and Web (desktop browser)  
 **Orientation:** Portrait  
 **Genre:** Casual Arcade / High-Score Stacker  
@@ -10,7 +12,7 @@
 
 ---
 
-# 1. Game Overview
+## 1. Game Overview
 
 Pancake Stacker is a casual arcade stacking game built around a simple but challenging one-touch gameplay mechanic.
 
@@ -24,9 +26,7 @@ The objective is to stack as many pancakes as possible, achieve high scores, and
 
 The game should be easy to understand, immediately playable, and challenging enough to encourage repeated attempts.
 
-# 2. Core Design Philosophy
-
-The game should follow these principles:
+## 2. Core Design Philosophy
 
 - **Simple controls:** One primary action: tap or click to drop.
 - **Easy to understand:** Players should understand the objective within seconds.
@@ -38,9 +38,7 @@ The game should follow these principles:
 
 The initial development priority is gameplay quality, not visual polish or monetization.
 
-# 3. Core Gameplay Loop
-
-The main gameplay sequence:
+## 3. Core Gameplay Loop
 
 1. A pancake appears above the existing stack.
 2. The pancake moves horizontally across the screen.
@@ -50,15 +48,13 @@ The main gameplay sequence:
 6. The remaining portion becomes the new top of the stack.
 7. The player receives points.
 8. A new pancake spawns and moves in the opposite direction.
-9. The process repeats until the player misses completely.
+9. The process repeats until the player misses completely or uses a future recovery feature.
 
-The game ends when the player fails to place a pancake successfully.
+The initial prototype ends the run after a complete miss. Recovery is a later feature.
 
-The player can then see their final score and compare it with their previous high score.
+## 4. Pancake Movement
 
-# 4. Pancake Movement
-
-## 4.1 Horizontal Movement
+### 4.1 Horizontal Movement
 
 Pancakes move horizontally from one side of the screen to the other.
 
@@ -71,15 +67,13 @@ Movement follows an alternating direction pattern:
 
 The pancake reverses direction when it reaches its movement boundary.
 
-The movement should remain continuous and smooth.
+Movement should remain continuous and smooth.
 
-## 4.2 Movement Speed
+### 4.2 Movement Speed
 
 Movement speed should gradually increase as the player successfully stacks more pancakes.
 
-This creates increasing difficulty and requires progressively better timing.
-
-The difficulty system should be configurable, allowing us to adjust:
+The difficulty system should be configurable, allowing adjustment of:
 
 - Initial movement speed.
 - Speed increase per successful placement.
@@ -88,43 +82,41 @@ The difficulty system should be configurable, allowing us to adjust:
 
 Exact balancing values will be determined through testing.
 
-## 4.3 Movement Boundaries
+### 4.3 Movement Boundaries
 
 Pancakes should move within a defined horizontal movement area.
 
-The movement area should account for the current pancake width and the screen boundaries, preventing pancakes from moving partially outside the playable area before being dropped.
+The movement area should account for the current pancake width and screen boundaries, preventing pancakes from moving partially outside the playable area before being dropped.
 
-# 5. Stacking Mechanics
+## 5. Stacking Mechanics
 
-## 5.1 Placement
+### 5.1 Placement
 
 When the player taps or clicks, the moving pancake immediately stops and begins its placement calculation.
 
 The game compares its horizontal position and width with the pancake directly underneath it.
 
-## 5.2 Overlap Calculation
-
-The game calculates the intersection between the two pancakes.
+### 5.2 Overlap Calculation
 
 There are three possible outcomes:
 
-**Perfect placement:**
+**Perfect placement**
 - The pancake aligns with the pancake underneath within an acceptable tolerance.
 - Its entire width is preserved.
 - The player receives bonus points.
 
-**Partial placement:**
+**Partial placement**
 - The pancake overlaps the previous pancake but extends beyond one or both edges.
 - The overhanging section is removed.
 - The remaining section becomes the new top pancake.
 - The player receives normal points.
 
-**Complete miss:**
+**Complete miss**
 - The pancake does not overlap the previous pancake.
 - The placement fails.
-- The game ends.
+- The initial prototype ends the run.
 
-## 5.3 Cutting Mechanic
+### 5.3 Cutting Mechanic
 
 The overhanging portion must be visually removed.
 
@@ -132,29 +124,29 @@ For the initial prototype, this can be represented using simple rectangles.
 
 The remaining pancake must have its actual width and position updated to match the calculated overlap.
 
-The game must not simply hide the overhanging section while retaining the original collision or stacking dimensions.
+The game must not simply hide the overhanging section while retaining the original stacking dimensions.
 
 All subsequent placements must use the actual remaining dimensions.
 
-## 5.4 Stack Growth
+### 5.4 Stack Growth
 
 Each successful placement increases the stack height.
 
 The stack should remain visually aligned and centered around its actual calculated positions.
 
-The camera should follow the height of the current stacking object.
+As the tower grows, the camera must keep the active stacking area visible.
 
-Camera behavior and scrolling implementation will be finalized during technical development.
+**Camera requirement:** The camera should follow the height of the current stacking object. The implementation should keep the currently active pancake and the top of the existing stack visible as the tower grows. Exact camera smoothing, offset and framing can be tuned during implementation.
 
-# 6. Scoring System
+## 6. Scoring System
 
-## 6.1 Normal Placement
+### 6.1 Normal Placement
 
 Successful pancake placements award points.
 
 The exact base score is still to be determined.
 
-## 6.2 Perfect Placement
+### 6.2 Perfect Placement
 
 A perfect placement preserves the entire pancake width.
 
@@ -162,15 +154,13 @@ Perfect placements award additional bonus points.
 
 The game should provide clear visual feedback when a perfect placement occurs.
 
-## 6.3 Perfect Placement Detection
+### 6.3 Perfect Placement Detection
 
 Perfect placement should use a configurable tolerance in pixels rather than requiring mathematically exact alignment.
 
-This is important because the game should feel fair and responsive.
+The tolerance must be tested and balanced so the game feels fair.
 
-The tolerance must be tested and balanced.
-
-## 6.4 Future Scoring Expansion
+### 6.4 Future Scoring Expansion
 
 Possible future additions:
 
@@ -182,9 +172,9 @@ Possible future additions:
 
 These are not required for the initial playable prototype.
 
-# 7. Game Over and Recovery
+## 7. Game Over and Recovery
 
-## 7.1 Game Over
+### 7.1 Game Over
 
 When a pancake completely misses the stack:
 
@@ -193,7 +183,7 @@ When a pancake completely misses the stack:
 - The player's high score is updated if necessary.
 - The player can restart and attempt another run.
 
-## 7.2 Future Recovery System
+### 7.2 Future Recovery System
 
 Recovery will eventually allow players to continue a run after making a mistake.
 
@@ -207,11 +197,9 @@ Potential recovery methods:
 
 These features are planned for a later development phase.
 
-The initial prototype does not need a functioning coin economy, advertisement integration or recovery mechanic.
+The initial prototype does not need a functioning coin economy, advertisement integration or recovery mechanic. The initial game-over flow should be simple. A placeholder continue button is optional and must not imply that recovery already works.
 
-The architecture should avoid making these future additions difficult.
-
-# 8. High Scores and Saving
+## 8. High Scores and Saving
 
 The game should track:
 
@@ -230,9 +218,9 @@ Future possibilities include:
 - Daily high scores.
 - Personal records and achievements.
 
-# 9. Visual Direction
+## 9. Visual Direction
 
-## 9.1 Initial Prototype
+### 9.1 Initial Prototype
 
 The initial prototype will use placeholder graphics.
 
@@ -245,7 +233,7 @@ Examples:
 
 The purpose is to validate gameplay before investing time in final artwork.
 
-## 9.2 Final Character Concept
+### 9.2 Final Character Concept
 
 The planned visual concept features a character standing beneath the pancake tower.
 
@@ -255,7 +243,7 @@ The character will eventually be represented by the original character (OC) desi
 
 The character should become an important part of the game's visual identity.
 
-## 9.3 Art Direction
+### 9.3 Art Direction
 
 The final art style is not locked yet.
 
@@ -265,7 +253,7 @@ The final art direction should preserve the wife's original OC art style rather 
 
 Artwork, textures, character animations, backgrounds and polished UI will be implemented after the gameplay skeleton is functional.
 
-# 10. User Interface
+## 10. User Interface
 
 The initial prototype should contain:
 
@@ -287,56 +275,52 @@ Buttons and text should remain readable on different mobile screen sizes.
 
 The initial interface can use Godot's standard UI elements and placeholder styling.
 
-# 11. Controls
+## 11. Controls
 
-## Mobile
-- Tap anywhere in the designated gameplay area to drop the pancake.
+**Mobile**
+- Tap in the designated gameplay area to drop the pancake.
 
-## Desktop / Web
-- Left mouse click to drop the pancake.
+**Desktop / Web**
+- Left mouse click in the designated gameplay area to drop the pancake.
 - Keyboard input may be added for development and testing if useful.
 
-The game should support both touch and mouse input without requiring separate gameplay implementations.
+The game should support touch and mouse input without requiring separate gameplay implementations.
 
-# 12. Technical Direction
+## 12. Technical Direction
 
-## Engine
+### Engine
 Godot 4.
 
-## Programming Language
+### Programming Language
 GDScript.
 
-## Gameplay Architecture
+### Gameplay Architecture
 
 The initial implementation should use deterministic mathematical calculations for pancake placement rather than relying on a physics simulation.
 
 This is preferable because the game requires precise, repeatable overlap calculations.
 
-The gameplay should be controlled by a central game manager.
+The gameplay should be coordinated by a central game manager, while individual responsibilities should remain separated into small, understandable components.
 
 Suggested initial structure:
 
-PancakeStacker/
-- project.godot
-- scenes/
-  - Main.tscn
-  - Pancake.tscn
-  - CharacterPlaceholder.tscn
-- scripts/
-  - game_manager.gd
-  - pancake.gd
-  - ui_manager.gd
-- assets/
-  - placeholders/
-- docs/
-  - GAME_DESIGN.md
-  - TECHNICAL_DESIGN.md
-  - TASKS.md
-  - CHANGELOG.md
+- `scenes/`
+  - `main/`
+  - `gameplay/`
+  - `ui/`
+- `scripts/`
+  - `core/`
+  - `gameplay/`
+  - `ui/`
+- `assets/`
+  - `art/`
+  - `audio/`
+  - `fonts/`
+- `docs/`
 
-This is a suggested starting structure and can be adjusted if a better architecture is identified.
+This structure may be adjusted as the project develops. Do not create empty systems or unnecessary abstractions just to fill the folders.
 
-## Important Technical Requirements
+### Important Technical Requirements
 
 - Use a consistent coordinate system.
 - Keep pancake dimensions synchronized with their visual representation.
@@ -346,10 +330,11 @@ This is a suggested starting structure and can be adjusted if a better architect
 - Keep high-score saving separate from gameplay logic.
 - Avoid unnecessary dependencies.
 - Avoid premature architecture complexity.
+- Implement and test one small component at a time.
 
-# 13. Initial Development Scope
+## 13. Initial Development Scope
 
-The first playable version must include:
+The first playable version should eventually include:
 
 1. Godot project setup.
 2. Portrait gameplay layout.
@@ -364,14 +349,14 @@ The first playable version must include:
 11. Normal and bonus scoring.
 12. Increasing movement speed.
 13. Stack growth.
-14. Camera following as necessary.
+14. Camera following the height of the current stacking object.
 15. Game-over state.
 16. Restart functionality.
 17. Persistent local high score.
 
-The prototype must be playable from beginning to end.
+These features must be implemented incrementally as separate tasks, not all in one pass.
 
-# 14. Explicitly Out of Scope for Initial Prototype
+## 14. Explicitly Out of Scope for Initial Prototype
 
 Do not implement these features unless explicitly requested:
 
@@ -394,7 +379,7 @@ Do not implement these features unless explicitly requested:
 
 These features may be introduced after the core gameplay has been validated.
 
-# 15. Development and Quality Goals
+## 15. Development and Quality Goals
 
 The initial prototype should prioritize:
 
@@ -408,9 +393,9 @@ The initial prototype should prioritize:
 
 The game should be tested frequently during development.
 
-Every new feature should be tested before moving on to the next one.
+Every task should be tested before moving on to the next one.
 
-# 16. Outstanding Design Decisions
+## 16. Outstanding Design Decisions
 
 The following details are intentionally left undecided:
 
@@ -421,16 +406,16 @@ The following details are intentionally left undecided:
 5. Perfect placement tolerance.
 6. Base points per successful placement.
 7. Perfect placement bonus value.
-8. Whether the camera follows continuously or moves in stages.
+8. Camera smoothing, offset and framing.
 9. Whether the tower has a maximum visible height before camera scrolling.
-10. Whether the pancakes eventually become narrower than a minimum threshold.
+10. Whether pancakes eventually become narrower than a minimum threshold.
 11. Final visual perspective: 2D or 2.5D-inspired.
 12. Exact character placement and proportions.
 13. Whether the game will include a separate title screen.
 
 These decisions can be made as development progresses.
 
-# 17. Project Vision
+## 17. Project Vision
 
 Pancake Stacker is intended to be the first game in a broader collection of small, polished, recognizable casual games developed by our studio.
 
@@ -442,4 +427,4 @@ It is creating a small game that feels good to play, encourages repeated attempt
 
 ---
 
-**END OF GDD — VERSION 0.1**
+**END OF GDD — VERSION 0.2**
