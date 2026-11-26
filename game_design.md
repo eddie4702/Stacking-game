@@ -1,7 +1,7 @@
 # PANCAKE STACKER
 ## Game Design Document (GDD)
 
-**Version:** 0.2 — Draft for Review  
+**Version:** 0.3 — Draft for Review  
 **Project status:** Pre-production  
 **Engine:** Godot 4  
 **Programming language:** GDScript  
@@ -253,6 +253,27 @@ The final art direction should preserve the wife's original OC art style rather 
 
 Artwork, textures, character animations, backgrounds and polished UI will be implemented after the gameplay skeleton is functional.
 
+### 9.4 Long-Term Visual Direction (Future, Not Current Scope)
+
+The initial prototype and all gameplay implementation remain 2D. The project is not being migrated to 3D during prototype development.
+
+The longer-term visual goal is to potentially upgrade the game to a polished 2.5D presentation before release: a game that looks and feels more three-dimensional while retaining relatively simple, deterministic stacking gameplay.
+
+Possible future visual improvements:
+
+- Pancakes with visible thickness, rounded edges and dimensional shading.
+- More convincing lighting, shadows and depth.
+- A 2.5D perspective and a richer environment.
+- A more dimensional character presentation.
+- More expressive animations, such as wobbling, falling reactions and camera effects.
+
+Constraints on this direction:
+
+- It is a future direction, not a requirement. Whether and how to do it will be decided after the core gameplay has been validated (see section 16, item 11).
+- Presentation must not change gameplay rules. Overlap, cutting, scoring and game over are based on gameplay coordinates and dimensions (see section 12), however the pancakes are drawn.
+- Visual reactions such as wobbling or falling are presentation only and should not change gameplay outcomes.
+- Nothing in this section changes the prototype scope in sections 13 and 14.
+
 ## 10. User Interface
 
 The initial prototype should contain:
@@ -320,10 +341,21 @@ Suggested initial structure:
 
 This structure may be adjusted as the project develops. Do not create empty systems or unnecessary abstractions just to fill the folders.
 
+### Gameplay and Presentation Separation
+
+Gameplay rules and calculations must be independent of the visual representation wherever reasonably practical.
+
+- Pancake overlap, cutting, perfect-placement detection and scoring are calculated from gameplay coordinates and dimensions, not from visual node sizes, visual physics or 3D collisions.
+- A pancake's visual representation is derived from its gameplay position and dimensions. Gameplay values are the source of truth.
+- The same inputs must give the same gameplay results whether pancakes are drawn as placeholder rectangles, illustrated 2D art or a possible future 2.5D presentation (see section 9.4).
+
+This is a separation of responsibilities, not a reason to add abstraction layers now. Do not build extra systems in preparation for a future presentation.
+
 ### Important Technical Requirements
 
 - Use a consistent coordinate system.
 - Keep pancake dimensions synchronized with their visual representation.
+- Keep gameplay calculations independent of visual representation (see Gameplay and Presentation Separation above).
 - Make stacking calculations deterministic.
 - Keep movement speed and perfect-placement tolerance configurable.
 - Separate gameplay logic from UI logic.
@@ -363,6 +395,7 @@ Do not implement these features unless explicitly requested:
 - Final OC artwork.
 - Final pancake illustrations.
 - Character animation.
+- 2.5D or 3D presentation (see section 9.4).
 - Particle effects.
 - Sound effects.
 - Music.
@@ -409,7 +442,7 @@ The following details are intentionally left undecided:
 8. Camera smoothing, offset and framing.
 9. Whether the tower has a maximum visible height before camera scrolling.
 10. Whether pancakes eventually become narrower than a minimum threshold.
-11. Final visual perspective: 2D or 2.5D-inspired.
+11. Final visual perspective: 2D or 2.5D-inspired. (A possible 2.5D upgrade is recorded as a future direction in section 9.4; it is not decided and not needed for the prototype.)
 12. Exact character placement and proportions.
 13. Whether the game will include a separate title screen.
 
@@ -427,4 +460,4 @@ It is creating a small game that feels good to play, encourages repeated attempt
 
 ---
 
-**END OF GDD — VERSION 0.2**
+**END OF GDD — VERSION 0.3**
