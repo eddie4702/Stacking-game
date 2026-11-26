@@ -170,7 +170,7 @@ Do not silently change a documented gameplay rule.
 
 ## 12. Current implementation state
 
-Updated after TASK-001. Describes what exists now, not what is planned.
+Updated after TASK-002. Describes what exists now, not what is planned.
 
 **Display settings (`project.godot`):**
 
@@ -186,13 +186,30 @@ Updated after TASK-001. Describes what exists now, not what is planned.
 Main (Node2D)
 ├── Background (CanvasLayer, layer -1)
 │   └── BackgroundColor (ColorRect, full-screen)
-└── GameplayArea (ColorRect, placeholder, 600x960 at 60,160)
+├── GameplayArea (ColorRect, placeholder, 600x960 at 60,160)
+└── Pancake (instance of scenes/gameplay/pancake.tscn, at 360,640)
 ```
 
 - The background sits on its own CanvasLayer so it stays fixed on screen and covers any window shape; this keeps it unaffected by a camera added later.
 - `GameplayArea` is a visual placeholder only. Its position and size are not final design decisions and carry no gameplay meaning yet.
+- The `Pancake` instance is a static placeholder showing that the pancake scene can be reused. It does not move. Later tasks will replace it or spawn pancakes in code.
 
-**Folders in use:** `scenes/main/`, `docs/`. Other folders in section 3 are created when a task needs them.
+**Pancake scene (`scenes/gameplay/pancake.tscn`, script `scripts/gameplay/pancake.gd`):**
+
+```text
+Pancake (Node2D, pancake.gd)
+└── Visual (ColorRect)
+```
+
+- **Configuration:** exported `width` and `height` (pixels, default 300 and 40) and `color` (default golden). Set them in the Inspector, or from code before or after adding the pancake to the tree. Negative sizes are clamped to 0. The defaults are placeholders; GDD section 16 item 1 (starting size) is still undecided.
+- **Gameplay values and visual:** `width` and `height` on the `Pancake` node are the pancake's dimensions, and other code should read them from there. `Visual` only draws them: the script resizes and recolours it whenever a value changes, so the visual cannot drift from the dimensions (see sections 5 and 13).
+- **Origin:** the centre of the pancake; `Visual` is offset by half its size. This was chosen in TASK-002 so a pancake resizes symmetrically. The edges are therefore `position.x - width / 2` and `position.x + width / 2`. It is a TASK-002 implementation choice, to be confirmed when overlap is implemented (section 5).
+- **Editor:** the script is `@tool`, so changes to `width`, `height` or `color` show immediately in the editor.
+- **Input:** `Visual` has `mouse_filter` set to Ignore, as a precaution so it never intercepts mouse events. This has not been verified in a running game.
+- **No behaviour:** no processing or input callbacks, no signals, and no movement, stacking, scoring or physics logic.
+- **Reuse:** instance `pancake.tscn` from another scene or with `load("res://scenes/gameplay/pancake.tscn").instantiate()`, set `width`, `height` and `color`, then set `position`.
+
+**Folders in use:** `scenes/main/`, `scenes/gameplay/`, `scripts/gameplay/`, `docs/`. Other folders in section 3 are created when a task needs them.
 
 ---
 

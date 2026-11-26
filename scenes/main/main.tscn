@@ -1,11 +1,13 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dkmc1ot4mia2g"]
 
-[node name="Main" type="Node2D"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/pancake.tscn" id="1_pancake"]
 
-[node name="Background" type="CanvasLayer" parent="."]
+[node name="Main" type="Node2D" unique_id=128290110]
+
+[node name="Background" type="CanvasLayer" parent="." unique_id=358166918]
 layer = -1
 
-[node name="BackgroundColor" type="ColorRect" parent="Background"]
+[node name="BackgroundColor" type="ColorRect" parent="Background" unique_id=1179234664]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -13,9 +15,13 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.96, 0.82, 0.62, 1)
 
-[node name="GameplayArea" type="ColorRect" parent="."]
+[node name="GameplayArea" type="ColorRect" parent="." unique_id=1527578012]
 offset_left = 60.0
 offset_top = 160.0
 offset_right = 660.0
 offset_bottom = 1120.0
 color = Color(1, 0.96, 0.88, 1)
+
+[node name="Pancake" parent="." unique_id=59629092 instance=ExtResource("1_pancake")]
+position = Vector2(360, 640)
+width = 600.0
