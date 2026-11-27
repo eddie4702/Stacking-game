@@ -4,8 +4,9 @@ extends Node
 ## The left and right limits come from `movement_area` (the GameplayArea). The
 ## pancake's actual `width` is used, so the whole pancake stays inside the area,
 ## not only its centre. This script only changes the pancake's horizontal
-## position. It never touches the Visual node, and it contains no input,
-## stacking, scoring, difficulty or camera logic.
+## position. It never touches the Visual node, and it contains no stacking,
+## scoring, difficulty or camera logic. Its only input handling is stopping
+## itself on a click or tap.
 ##
 ## Alternating start sides: each pancake that starts moving takes the next side
 ## in the sequence left, right, left, right, ... (see start()).
@@ -44,6 +45,25 @@ static func reset_start_sequence() -> void:
 func _ready() -> void:
 	if autostart:
 		start()
+
+
+## A left click or a tap stops the pancake in place. The position is left
+## untouched; _process() simply stops advancing it on the next frame.
+func _input(event: InputEvent) -> void:
+	# Ignore input unless this pancake is actually moving. This also makes a
+	# second event from the same press harmless (for example mouse emulation).
+	if not moving:
+		return
+
+	var mouse_event := event as InputEventMouseButton
+	if mouse_event != null:
+		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT:
+			moving = false
+		return
+
+	var touch_event := event as InputEventScreenTouch
+	if touch_event != null and touch_event.pressed and touch_event.index == 0:
+		moving = false
 
 
 ## Puts the pancake on the next starting side and starts it moving. The first

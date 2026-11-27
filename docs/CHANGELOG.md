@@ -5,8 +5,20 @@ Record meaningful project changes here, newest first. Keep entries concise and f
 
 ---
 
-## 2026-11-26 — TASK-003: Pancake movement (awaiting review)
+## 2026-11-27 — TASK-004: Pancake placement input (approved, awaiting commit)
 
+- Added a small `_input()` handler to `scripts/gameplay/pancake_movement.gd`. A left mouse press or the first touch press clears `moving` and stops the pancake at its current position; the handler never changes the position. It acts only while the pancake is moving, and ignores mouse release, right clicks, secondary touches and input while stopped.
+- No scene structure change was needed: `Movement` already owns `moving` and is separate from `Visual`. No input manager, global system, signal or new node was added. `pancake.gd`, `pancake.tscn`, `main.tscn` and `project.godot` are unchanged.
+- Alternating starting sides was already implemented in TASK-003 and was not implemented again.
+- Automated tests (Godot 4.7.2-stable, headless): syntax check, project import and project run all clean. A temporary 25-check harness passed, covering stop on left click and first touch, exact position preservation, no movement after stopping, repeated/wrong input being ignored, no effect before movement starts, movement still advancing, and real engine-dispatched mouse and touch events. A mutation that removed the left-button check made two checks fail as expected; it was reverted. The temporary harness was deleted.
+- Documentation: TASK-004 marked DONE after approval and re-scoped to placement input; TASK-005 redefined as stacking/overlap calculation; the redundant former TASK-006 overlap entry was merged into TASK-005; later task numbers retained. Technical design updated with the actual input implementation.
+- Not verified: clicking/tapping in the Godot editor UI or a real running window, a real touchscreen, a browser build, a mobile device, and a real GPU. No stacking, overlap, cutting, spawning, scoring, difficulty, camera or game-over code was added.
+
+---
+
+## 2026-11-26 — TASK-003: Pancake movement (approved and merged)
+
+- Status: approved by the project owner and merged into `main`.
 - Added `scripts/gameplay/pancake_movement.gd` (plus its generated `.uid`) and a `Movement` child node in `scenes/gameplay/pancake.tscn`. `pancake.gd` is unchanged.
 - The pancake moves horizontally within `GameplayArea` (exported `movement_area`) using its current width, reversing at the edges. Based on `delta`; no physics. Exports: `movement_area`, `speed` (250 px/s, provisional), `autostart`; plus a `moving` flag.
 - Alternating start sides (extra requirement confirmed by the project owner): each pancake that starts moving takes the next side through a shared counter: left moving right, then right moving left, and so on. `reset_start_sequence()` restarts it; nothing calls it yet. This overlaps the scope of TASK-004, which was left unchanged for the owner to re-scope (a note was added to it).
@@ -18,11 +30,12 @@ Record meaningful project changes here, newest first. Keep entries concise and f
 
 ---
 
-## 2026-11-26 — TASK-002: Reusable pancake scene (awaiting review)
+## 2026-11-26 — TASK-002: Reusable pancake scene (approved and merged)
 
+- Status: approved by the project owner and merged into `main`.
 - Added `scenes/gameplay/pancake.tscn` and `scripts/gameplay/pancake.gd` (plus Godot's generated `pancake.gd.uid`): a `Pancake` Node2D with a `Visual` ColorRect child. Exported `width`, `height` (px) and `color`; `@tool` so the editor shows changes. Origin is the pancake's centre. Defaults 300x40 are placeholders.
 - Instanced one static pancake in `scenes/main/main.tscn` at (360, 640). No other change to the main scene. `project.godot` is unchanged.
-- TASKS.md: TASK-002 set to REVIEW; TASK-001 set to DONE (accepted and merged by the project owner).
+- TASKS.md: TASK-002 set to DONE after approval and merge; TASK-001 set to DONE (accepted and merged by the project owner).
 - Automated tests (Godot 4.7-stable, headless): syntax check, import, project run and editor-mode load all clean; a 31-check script covering defaults, runtime changes, values set before entering the tree, independent instances, invalid values, absence of processing/input/signals, and the main-scene instance passed. A software-rendered screenshot was inspected.
 - Not verified: Inspector editing and live editor preview, a real GPU, a browser, a mobile device.
 - Notes: `GameplayArea` (TASK-001) uses a default ColorRect mouse filter; check when TASK-005 handles input that it does not block clicks (not verified either way).

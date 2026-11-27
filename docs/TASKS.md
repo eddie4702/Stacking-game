@@ -4,7 +4,7 @@
 **Version:** 0.1  
 **Status key:** `READY` = may be assigned; `PLANNED` = not yet authorized; `IN PROGRESS` = currently being worked on; `REVIEW` = awaiting owner review; `DONE` = accepted and tested.
 
-> Important: This is the roadmap, not blanket permission to implement everything. Only Task 001 is initially ready. The project owner must explicitly authorize each next task.
+> Important: This is the roadmap, not blanket permission to implement everything. Only tasks explicitly authorized by the project owner may be started; the current authorization is stated at the end of this file.
 
 ---
 
@@ -49,7 +49,7 @@
 - Known issues and items to verify manually are listed in the TASK-001 completion report and in `docs/CHANGELOG.md`.
 
 ### TASK-002 — Create a reusable pancake scene
-**Status:** REVIEW
+**Status:** DONE
 
 **Goal:** Create one simple reusable pancake placeholder scene.
 
@@ -64,7 +64,7 @@
 - Its visual dimensions are easy to inspect and adjust.
 - No unrelated gameplay logic is included.
 
-**Result (2026-11-26):** Implemented and awaiting owner review.
+**Result (2026-11-26):** Reviewed and tested in the Godot editor by the project owner, then merged into `main`.
 - `scenes/gameplay/pancake.tscn` created: `Pancake` (Node2D, script `scripts/gameplay/pancake.gd`) with one child, `Visual` (ColorRect).
 - `width`, `height` (pixels) and `color` are exported, so they can be set in the Inspector or from code. The script is `@tool`, so the scene also updates in the editor. Negative sizes are clamped to 0.
 - The node's origin is the centre of the pancake. Defaults are 300x40 and a golden colour; these are placeholders, not design decisions (GDD section 16, item 1 is still undecided).
@@ -77,7 +77,7 @@
 ## Milestone 2 — Movement and input
 
 ### TASK-003 — Implement horizontal pancake movement
-**Status:** REVIEW
+**Status:** DONE
 
 **Goal:** Move one pancake smoothly from side to side within defined horizontal boundaries.
 
@@ -93,66 +93,66 @@
 - Direction reversal is reliable.
 - Movement speed can be adjusted without editing core logic.
 
-**Result (2026-11-26):** Implemented and awaiting owner review.
+**Result (2026-11-26):** Reviewed and tested in the Godot editor by the project owner, then merged into `main`.
 - `scripts/gameplay/pancake_movement.gd` created and added as a `Movement` child node in `scenes/gameplay/pancake.tscn`. `pancake.gd` is unchanged.
 - The pancake moves back and forth within `GameplayArea` (set through the exported `movement_area`), using its current `width` so the whole pancake stays inside, and reverses at the edges. Movement uses `delta`; no physics.
 - `speed` is exported: 250 px/s. This is a provisional default, not a final design decision (GDD section 16, items 2 to 4 are still undecided).
-- Alternating start sides, an extra requirement confirmed by the project owner for this task: the first pancake starts on the left and moves right, the second starts on the right and moves left, and so on. This overlaps TASK-004 (see the note there).
+- Alternating start sides, an extra requirement confirmed by the project owner for this task: the first pancake starts on the left and moves right, the second starts on the right and moves left, and so on. TASK-004 was subsequently re-scoped to placement input, so alternation is not part of TASK-004.
 - `scenes/main/main.tscn`: `Movement` is wired to `GameplayArea`. The instance's `width = 600.0` override (as wide as the whole area, so no room to move) was removed; the default 300 applies.
 - Automated tests with Godot 4.7-stable passed (see `docs/CHANGELOG.md`). Still to verify manually in the Godot editor: running the game and watching the pancake, and the `Movement` node's Inspector properties on the main-scene instance.
 
-### TASK-004 — Implement alternating direction
-**Status:** PLANNED
+### TASK-004 — Implement pancake placement input
+**Status:** DONE
 
-**Goal:** Make successive pancakes travel in alternating directions.
-
-**Scope:**
-- First pancake travels left-to-right.
-- Next travels right-to-left.
-- Continue alternating after each successful placement.
-
-**Acceptance criteria:**
-- Direction alternates reliably.
-- Restarting a run resets direction consistently.
-
-**Note (2026-11-26):** Alternating the starting side of newly started pancakes was implemented in TASK-003 at the project owner's request. The scope of this task is to be confirmed by the project owner before it starts.
-
-### TASK-005 — Implement drop input
-**Status:** PLANNED
-
-**Goal:** Allow the player to stop the active pancake with one action.
+**Goal:** Let the player stop the currently moving pancake at its current horizontal position with one tap or click.
 
 **Scope:**
-- Support touch input on mobile.
-- Support left mouse click on desktop/web.
-- Prevent multiple drops from one input or drops after the game is no longer active.
-- Keep input handling separate from the pancake's movement implementation where practical.
+- Support left mouse clicks on desktop/web.
+- Support touchscreen taps on mobile.
+- Stop the active pancake by clearing the movement system's `moving` state; do not add a second movement implementation.
+- Preserve the pancake's exact position at the moment of input.
+- Ignore repeat events from one press and input while the pancake is not moving.
 
 **Acceptance criteria:**
-- One tap/click stops the active pancake exactly once.
-- Both input methods work.
-- Input cannot trigger invalid state transitions.
+- A moving pancake stops when clicked with the left mouse button.
+- A moving pancake stops when tapped on a touchscreen.
+- The pancake remains at its stopped position and does not move afterwards.
+- Input before the pancake starts moving has no effect.
+- Repeated clicks or taps do not cause unexpected behaviour.
+- The existing movement system still works.
+
+**Result (2026-11-27):** Implemented and approved by the project owner; awaiting commit/merge.
+- `scripts/gameplay/pancake_movement.gd` gained a small `_input()` handler. It responds only to a left mouse press or the first touch press, and only while `moving` is true. It clears `moving` and changes no position.
+- No new scene nodes, input managers or global systems were added; `pancake.gd`, `pancake.tscn`, `main.tscn` and `project.godot` are unchanged. The existing `Movement` node already owns `moving` and is separate from `Visual`, so the scene structure did not need modification.
+- Alternating starting sides was already implemented in TASK-003. It was not implemented again and is no longer part of TASK-004.
+- Automated tests with Godot 4.7.2-stable passed (25 checks; see `docs/CHANGELOG.md`). Still to verify manually: real mouse clicks and real touchscreen taps in the running/editor game, a browser build, and a mobile device.
 
 ---
 
 ## Milestone 3 — Stacking
 
-### TASK-006 — Calculate horizontal overlap
+> Roadmap note (2026-11-27): the former TASK-006 overlap task was merged into TASK-005. Later task numbers are retained to avoid rewriting existing IDs. TASK-007 remains the separate overhang-application task if cutting is not folded into TASK-005.
+
+### TASK-005 — Implement stacking and overlap calculation
 **Status:** PLANNED
 
-**Goal:** Calculate the intersection between the moving pancake and the pancake underneath.
+**Goal:** Calculate the horizontal overlap between the newly placed pancake and the pancake directly below it.
 
 **Scope:**
-- Use deterministic mathematical calculations.
-- Handle left and right overhang.
-- Detect complete misses.
-- Detect perfect alignment using a configurable tolerance.
-- Keep the calculation independently testable where practical.
+- Use deterministic mathematical calculations based on gameplay coordinates and dimensions.
+- Determine the remaining width and centre position of the placement.
+- Detect a complete miss; game-over handling remains in TASK-013 and must not be implemented here.
+- Decide whether cutting away overhang belongs in this task; if not, keep it as TASK-007.
 
 **Acceptance criteria:**
-- Correct overlap width and position are calculated for left overhang, right overhang and exact alignment.
-- Complete misses are detected.
-- Edge cases are handled without negative or invalid dimensions.
+- Overlap width and position are correct for left overhang, right overhang and exact alignment.
+- The remaining pancake dimensions and position are derived mathematically and are independently testable.
+- Complete misses are detected without implementing game-over logic.
+- No duplicate placement input is added; TASK-004 already provides it.
+
+**Dependencies:** TASK-004 supplies the stopped pancake. This is the next logical task after TASK-004.
+
+**Note (2026-11-27):** This entry replaces the former "drop input" TASK-005 and absorbs the former TASK-006 ("calculate horizontal overlap"). No stacking or overlap code has been implemented.
 
 ### TASK-007 — Apply the cut-off result
 **Status:** PLANNED
@@ -354,6 +354,6 @@ These tasks must be separately designed and approved:
 
 ## Current authorization
 
-**TASK-003 is implemented and awaiting owner review.** TASK-002 is merged into `main` but still marked REVIEW; its status is left for the project owner to confirm. No other task is authorized.
+**TASK-004 has passed code review and is approved for commit.** TASK-002 and TASK-003 are DONE and merged into `main`. TASK-005 is the next planned task (stacking and overlap calculation) but is not yet authorized.
 
-Do not start TASK-004 or any later task until the project owner reviews TASK-003 and explicitly approves the next step.
+Do not start TASK-005 or any later task until the project owner explicitly authorizes it.
