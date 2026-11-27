@@ -133,26 +133,32 @@
 
 > Roadmap note (2026-11-27): the former TASK-006 overlap task was merged into TASK-005. Later task numbers are retained to avoid rewriting existing IDs. TASK-007 remains the separate overhang-application task if cutting is not folded into TASK-005.
 
-### TASK-005 — Implement stacking and overlap calculation
-**Status:** PLANNED
+### TASK-005 — Implement Pancake Overlap Calculation
+**Status:** REVIEW
 
-**Goal:** Calculate the horizontal overlap between the newly placed pancake and the pancake directly below it.
+**Goal:** Deterministically calculate the horizontal overlap between the pancake the player has just stopped and the supporting pancake directly beneath it.
 
 **Scope:**
-- Use deterministic mathematical calculations based on gameplay coordinates and dimensions.
-- Determine the remaining width and centre position of the placement.
-- Detect a complete miss; game-over handling remains in TASK-013 and must not be implemented here.
-- Decide whether cutting away overhang belongs in this task; if not, keep it as TASK-007.
+- Use centre-based gameplay coordinates and actual widths; do not read visual node sizes.
+- Provide a small, independently testable static calculation.
+- Return a complete-miss flag, the calculated overlap width and the overlap centre X when an overlap exists.
+- Handle support pancakes that are already narrower and offset from the original base centre.
 
 **Acceptance criteria:**
-- Overlap width and position are correct for left overhang, right overhang and exact alignment.
-- The remaining pancake dimensions and position are derived mathematically and are independently testable.
-- Complete misses are detected without implementing game-over logic.
+- Exact alignment, left overhang, right overhang, fully inside, fully covering, edge touch, separation, cut/offset support, and differing widths/centres all produce verified numerical results.
+- Complete misses are detected when `overlap_width <= 0`, without game-over logic.
+- No pancake nodes are resized or repositioned; no visuals, spawning, scoring, perfect tolerance or physics are added.
 - No duplicate placement input is added; TASK-004 already provides it.
 
-**Dependencies:** TASK-004 supplies the stopped pancake. This is the next logical task after TASK-004.
+**Dependencies:** TASK-004 supplies the stopped pancake. Applying the calculation to pancake dimensions remains TASK-007.
 
-**Note (2026-11-27):** This entry replaces the former "drop input" TASK-005 and absorbs the former TASK-006 ("calculate horizontal overlap"). No stacking or overlap code has been implemented.
+**Result (2026-11-27):** Implemented and awaiting owner review.
+- `scripts/gameplay/pancake_overlap.gd` (plus Godot's generated `.uid`) added: a `RefCounted` utility with one static `calculate()` function and a three-key Dictionary result. No scene, node or project-setting changes.
+- The returned Dictionary contains `is_complete_miss`, raw signed `overlap_width`, and `overlap_center_x` (midpoint or `null` on a complete miss).
+- Automated tests with Godot 4.7.2-stable passed: syntax check, import, project run and a temporary 63-check harness covering all nine required edge cases with exact expected values. A mutation replacing `maxf` with `minf` produced failures and was reverted. The temporary harness was deleted.
+- Not implemented: applying the cut, spawning, scoring, perfect tolerance, game over, camera or any visual change.
+
+**Note (2026-11-27):** This entry replaces the former "drop input" TASK-005 and absorbs the former TASK-006 ("calculate horizontal overlap").
 
 ### TASK-007 — Apply the cut-off result
 **Status:** PLANNED
@@ -354,6 +360,6 @@ These tasks must be separately designed and approved:
 
 ## Current authorization
 
-**TASK-004 has passed code review and is approved for commit.** TASK-002 and TASK-003 are DONE and merged into `main`. TASK-005 is the next planned task (stacking and overlap calculation) but is not yet authorized.
+**TASK-005 is implemented and awaiting owner review.** TASK-001 to TASK-004 are DONE. TASK-007 (apply the cut-off result) and TASK-008 (spawn the next pancake) remain PLANNED and are not authorized.
 
-Do not start TASK-005 or any later task until the project owner explicitly authorizes it.
+Do not start TASK-007 or any later task until the project owner explicitly authorizes it.
