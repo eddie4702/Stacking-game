@@ -163,7 +163,7 @@
 **Note (2026-11-27):** This entry replaces the former "drop input" TASK-005 and absorbs the former TASK-006 ("calculate horizontal overlap").
 
 ### TASK-007 — Apply the cut-off result
-**Status:** PLANNED
+**Status:** REVIEW
 
 **Goal:** Apply the overlap result to the placed pancake so only the overlapping portion remains.
 
@@ -183,6 +183,12 @@
 - The visual remains centred around the Node2D root.
 - The resulting pancake becomes the support reference for the next placement.
 - Repeated placements use the updated width and absolute centre correctly.
+
+**Result (2026-11-27):** Implemented and awaiting owner review.
+- `scripts/gameplay/pancake.gd` gained `apply_overlap_result(result)`. On a successful result it sets `width` to `overlap_width` and `global_position.x` to the absolute `overlap_center_x`; the existing width setter resizes and recentres `Visual`. It returns `false` and changes nothing for a complete miss or invalid result.
+- The absolute centre is assigned directly to the root's global X; no local/global transform is applied twice. `y`, `height`, `color`, `Movement`, input, spawning, scoring, perfect-placement detection, game-over and camera logic are untouched. The caller must stop movement before applying a result; TASK-004 already does this.
+- Automated tests with Godot 4.7.2-stable passed: syntax check, import, project run and a temporary 62-check harness covering cases A, B and C, visual size and centring, a complete miss, and an invalid non-miss result. A separate 7-check offset-parent harness confirmed that `global_position.x` receives the absolute centre while the local root X stays parent-relative. A mutation forcing root X to `0` caused 7 expected failures and was reverted. Both temporary harnesses were deleted.
+- No graphical UI changes; manual visual confirmation in the Godot editor is still recommended. No new task is authorized by this result.
 
 ### TASK-008 — Spawn the next pancake
 **Status:** PLANNED
@@ -373,6 +379,6 @@ These tasks must be separately designed and approved:
 
 ## Current authorization
 
-**TASK-005 is implemented and awaiting owner review.** TASK-001 to TASK-004 are DONE. TASK-007 (apply the cut-off result) and TASK-008 (spawn the next pancake) remain PLANNED and are not authorized.
+**TASK-007 is implemented and awaiting owner review.** TASK-001 to TASK-005 are DONE. TASK-008 (spawn the next pancake) remains PLANNED and is not authorized.
 
-Do not start TASK-007 or any later task until the project owner explicitly authorizes it.
+Do not start TASK-008 or any later task until the project owner explicitly authorizes it.

@@ -113,7 +113,7 @@ The exact coordinate representation and edge-case handling are confirmed in TASK
 
 **Implemented in TASK-005:** `scripts/gameplay/pancake_overlap.gd` provides a static, pure calculation. Perfect-placement tolerance, cutting, scoring and game-over handling are not part of this implementation.
 
-**Confirmed stacking reference and inheritance (design rule; application remains TASK-007 and TASK-008):**
+**Confirmed stacking reference and inheritance (design rule; cut application is implemented in TASK-007; spawning remains TASK-008):**
 
 - A stationary base pancake exists at the bottom of the stack. The player never moves or places it. It supports the first moving pancake. Its initial width and position remain configurable.
 - The first moving pancake inherits the base pancake's width. Every subsequent moving pancake inherits the width of the most recently placed pancake. Width must never reset to the original base width; each placement can progressively reduce the stack width.
@@ -129,7 +129,7 @@ The exact coordinate representation and edge-case handling are confirmed in TASK
 - The midpoint offset from the surviving pancake's left edge is `75`. It is NOT the absolute gameplay X position. The Node2D root must use `X = 125`, and the visual must be centred around that root. Because the Node2D root is centred on the pancake, the centre's coordinate relative to that root is `0`.
 - For the next placement, the second moving pancake must inherit width `150` and calculate overlap against the first placed pancake at absolute centre `X = 125`. The original base at `X = 100` is no longer the support.
 
-These rules clarify intended gameplay and coordinates only. TASK-005 did not apply cuts, spawn pancakes or change any node.
+These rules clarify intended gameplay and coordinates. TASK-005 did not apply cuts; TASK-007 now applies a successful result to an individual pancake. Spawning remains TASK-008.
 
 ## 6. Camera requirement
 
@@ -192,7 +192,7 @@ Do not silently change a documented gameplay rule.
 
 ## 12. Current implementation state
 
-Updated after TASK-005 and a documentation-only clarification of stacking coordinates and inheritance. Describes what exists now, not what is planned.
+Updated after TASK-007. Describes what exists now, not what is planned.
 
 **Display settings (`project.godot`):**
 
@@ -231,7 +231,8 @@ Pancake (Node2D, pancake.gd)
 - **Origin:** the centre of the pancake; `Visual` is offset by half its size. This was chosen in TASK-002 so a pancake resizes symmetrically. The edges are therefore `position.x - width / 2` and `position.x + width / 2`. This is the confirmed root convention: the Node2D root uses the absolute gameplay centre, and `Visual` stays centred around it (section 5).
 - **Editor:** the script is `@tool`, so changes to `width`, `height` or `color` show immediately in the editor.
 - **Input:** `Visual` has `mouse_filter` set to Ignore, as a precaution so it never intercepts mouse events. TASK-004 places the input callback on `Movement` and uses `_input()`, so it does not depend on Control mouse filters. This has not been verified with a real mouse or touchscreen.
-- **`pancake.gd` has no behaviour:** no processing or input callbacks, no signals, and no movement, stacking, scoring or physics logic. Movement is in the separate `Movement` node (below).
+- **Behaviour:** `pancake.gd` has no processing or input callbacks, no signals, and no movement, scoring or physics logic. Its only gameplay behaviour is `apply_overlap_result()` (TASK-007), described below. Movement is in the separate `Movement` node (below).
+- **Overlap application (TASK-007):** `apply_overlap_result(result: Dictionary) -> bool` accepts a result from `PancakeOverlap.calculate()`. On a non-miss it assigns `overlap_width` to `width` and `overlap_center_x` to `global_position.x`, preserving `y`, `height`, `color` and `Movement`. The existing `width` setter updates `Visual`; the method never resizes or offsets `Visual` itself. A complete miss, zero/negative width, or malformed result returns `false` without changes. Callers must stop movement before applying a result; TASK-004 already does this.
 - **Reuse:** instance `pancake.tscn` from another scene or with `load("res://scenes/gameplay/pancake.tscn").instantiate()`, set `width`, `height` and `color`, set `position.y`, and set the `Movement` node's `movement_area` (before adding it to the tree if it should start moving straight away).
 
 **Pancake movement (`Movement` node, `scripts/gameplay/pancake_movement.gd`, TASK-003):**
@@ -254,7 +255,7 @@ Pancake (Node2D, pancake.gd)
   - `"is_complete_miss"` (`bool`): `true` when `overlap_width <= 0`.
   - `"overlap_width"` (`float`): the raw signed result, so separated pancakes return a negative value and edge-touching returns `0`.
   - `"overlap_center_x"` (`float` or `null`): the absolute centre in the shared gameplay coordinate system, `(overlap_left + overlap_right) / 2` (equivalently `overlap_left + overlap_width / 2`) when an overlap exists, otherwise `null`.
-- It is not attached to any scene node and changes no scene structure. Applying the result to a pancake remains TASK-007. Spawning the next pancake with inherited width and support reference remains TASK-008.
+- It is not attached to any scene node and changes no scene structure. Applying the result to a pancake is implemented by `Pancake.apply_overlap_result()` in TASK-007; spawning the next pancake with inherited width and support reference remains TASK-008.
 
 **Folders in use:** `scenes/main/`, `scenes/gameplay/`, `scripts/gameplay/`, `docs/`. Other folders in section 3 are created when a task needs them.
 
