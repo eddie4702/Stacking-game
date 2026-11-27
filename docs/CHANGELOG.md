@@ -5,6 +5,16 @@ Record meaningful project changes here, newest first. Keep entries concise and f
 
 ---
 
+## 2026-11-27 — TASK-007: Apply the pancake overlap result (awaiting review)
+
+- Added `apply_overlap_result(result: Dictionary) -> bool` to `scripts/gameplay/pancake.gd`. For a successful `PancakeOverlap.calculate()` result it sets the pancake's actual `width` to `overlap_width` and its `global_position.x` to the absolute `overlap_center_x`; the existing width setter updates `Visual`. It returns `false` and changes nothing for a complete miss, invalid types, or non-positive width.
+- No scene, movement, input, project-setting or visual-node changes. `y`, `height`, `color`, spawning, scoring, perfect-placement detection, game-over, camera and physics remain untouched. Callers must stop movement before applying a result; TASK-004 already does this.
+- Automated tests (Godot 4.7.2-stable, headless): syntax check, project import and project run clean. A temporary 62-check harness passed, covering case A (right overhang: width 150, absolute centre 125), case B (left overhang: width 150, absolute centre 75), case C (repeated placement relative to the first placed pancake: width 125, absolute centre 112.5), visual size and centring, an unchanged complete miss, and an invalid non-miss result. A separate 7-check offset-parent harness confirmed that `global_position.x` receives the absolute centre while the local root X stays parent-relative. A mutation forcing root X to `0` caused 7 expected failures and was reverted. The temporary harnesses and their generated `.uid` files were deleted.
+- Documentation: TASK-007 marked REVIEW; technical design records the actual application method and coordinate handling. TASK-008 remains PLANNED and is not authorized.
+- Not verified: real editor/GPU visuals, manual mouse/touch play, browser and mobile builds. No stacking manager, base pancake, spawning, scoring or game-over logic was added.
+
+---
+
 ## 2026-11-27 — Documentation clarification: stacking coordinates and inheritance
 
 - Clarified in `game_design.md` and `docs/TECHNICAL_DESIGN.md` that a stationary, configurable base pancake supports the first moving pancake; the player never moves or places it.
