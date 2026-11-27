@@ -5,7 +5,7 @@ Record meaningful project changes here, newest first. Keep entries concise and f
 
 ---
 
-## 2026-11-27 — TASK-008: Spawn the next pancake (awaiting review)
+## 2026-11-27 — TASK-008: Spawn the next pancake (merged)
 
 - Added `scripts/core/pancake_stack.gd` (plus its generated `.uid`) and attached it to `Main`. The existing `Pancake` instance in `main.tscn` is now the stationary base via `Movement.autostart = false`. `pancake_movement.gd` gained `class_name PancakeMovement` so the controller can use the movement type and reset the shared start-side counter on fresh game setup.
 - The controller spawns one moving pancake from the base, watches the active `Movement.moving` state change to `false`, calls `PancakeOverlap.calculate()` against the current support, applies a successful result with `apply_overlap_result()`, promotes that pancake to support, and spawns exactly one successor. Successors inherit width, height, colour and absolute centre from the immediately preceding placed pancake; a complete miss stops and spawns nothing.
