@@ -5,7 +5,18 @@ Record meaningful project changes here, newest first. Keep entries concise and f
 
 ---
 
-## 2026-11-27 — TASK-007: Apply the pancake overlap result (awaiting review)
+## 2026-11-27 — TASK-008: Spawn the next pancake (awaiting review)
+
+- Added `scripts/core/pancake_stack.gd` (plus its generated `.uid`) and attached it to `Main`. The existing `Pancake` instance in `main.tscn` is now the stationary base via `Movement.autostart = false`. `pancake_movement.gd` gained `class_name PancakeMovement` so the controller can use the movement type and reset the shared start-side counter on fresh game setup.
+- The controller spawns one moving pancake from the base, watches the active `Movement.moving` state change to `false`, calls `PancakeOverlap.calculate()` against the current support, applies a successful result with `apply_overlap_result()`, promotes that pancake to support, and spawns exactly one successor. Successors inherit width, height, colour and absolute centre from the immediately preceding placed pancake; a complete miss stops and spawns nothing.
+- Each successor is spawned at the support's absolute centre, one pancake height above it. `Movement.start()` then applies the existing alternating starting-side behaviour, so spawn inheritance and side alternation are both preserved. No overlap mathematics, input handling, visuals, scoring, game-over, restart, camera or difficulty logic was duplicated or added.
+- Automated tests (Godot 4.7.2-stable, headless): syntax checks, project import and a main-scene run were clean. A temporary 49-check harness passed: pre-start inheritance of width/centre/height, three consecutive placements (150 @ 125, 125 @ 112.5, 122.5 @ 111.25), immediate-support promotion, exactly one successor per placement, alternating left/right start sides, one moving pancake at a time, stationary placed pancakes, and no spawn after a complete miss. The harness emitted one expected warning from a probe with no movement area and was deleted afterwards.
+- Documentation: TASK-008 marked REVIEW; technical design records the controller, stationary base and progression rules. TASK-009 and later tasks remain PLANNED and are not authorized.
+- Not verified: real mouse/touch play, editor/GPU visuals, browser and mobile builds.
+
+---
+
+## 2026-11-27 — TASK-007: Apply the pancake overlap result (merged)
 
 - Added `apply_overlap_result(result: Dictionary) -> bool` to `scripts/gameplay/pancake.gd`. For a successful `PancakeOverlap.calculate()` result it sets the pancake's actual `width` to `overlap_width` and its `global_position.x` to the absolute `overlap_center_x`; the existing width setter updates `Visual`. It returns `false` and changes nothing for a complete miss, invalid types, or non-positive width.
 - No scene, movement, input, project-setting or visual-node changes. `y`, `height`, `color`, spawning, scoring, perfect-placement detection, game-over, camera and physics remain untouched. Callers must stop movement before applying a result; TASK-004 already does this.

@@ -1,3 +1,4 @@
+class_name PancakeMovement
 extends Node
 ## Moves the parent Pancake back and forth across the gameplay area.
 ##

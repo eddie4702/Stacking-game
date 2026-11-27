@@ -113,7 +113,7 @@ The exact coordinate representation and edge-case handling are confirmed in TASK
 
 **Implemented in TASK-005:** `scripts/gameplay/pancake_overlap.gd` provides a static, pure calculation. Perfect-placement tolerance, cutting, scoring and game-over handling are not part of this implementation.
 
-**Confirmed stacking reference and inheritance (design rule; cut application is implemented in TASK-007; spawning remains TASK-008):**
+**Confirmed stacking reference and inheritance (design rule; cut application is implemented in TASK-007; spawning is implemented in TASK-008):**
 
 - A stationary base pancake exists at the bottom of the stack. The player never moves or places it. It supports the first moving pancake. Its initial width and position remain configurable.
 - The first moving pancake inherits the base pancake's width. Every subsequent moving pancake inherits the width of the most recently placed pancake. Width must never reset to the original base width; each placement can progressively reduce the stack width.
@@ -129,7 +129,7 @@ The exact coordinate representation and edge-case handling are confirmed in TASK
 - The midpoint offset from the surviving pancake's left edge is `75`. It is NOT the absolute gameplay X position. The Node2D root must use `X = 125`, and the visual must be centred around that root. Because the Node2D root is centred on the pancake, the centre's coordinate relative to that root is `0`.
 - For the next placement, the second moving pancake must inherit width `150` and calculate overlap against the first placed pancake at absolute centre `X = 125`. The original base at `X = 100` is no longer the support.
 
-These rules clarify intended gameplay and coordinates. TASK-005 did not apply cuts; TASK-007 now applies a successful result to an individual pancake. Spawning remains TASK-008.
+These rules clarify gameplay and coordinates. TASK-005 calculates the overlap, TASK-007 applies a successful result to an individual pancake, and TASK-008 spawns successors that inherit from that placed pancake.
 
 ## 6. Camera requirement
 
@@ -192,7 +192,7 @@ Do not silently change a documented gameplay rule.
 
 ## 12. Current implementation state
 
-Updated after TASK-007. Describes what exists now, not what is planned.
+Updated after TASK-008. Describes what exists now, not what is planned.
 
 **Display settings (`project.godot`):**
 
@@ -202,21 +202,31 @@ Updated after TASK-007. Describes what exists now, not what is planned.
 - Stretch mode `canvas_items`, aspect `expand`. Extra screen space on non-9:16 windows appears to the right and below the 720x1280 area.
 - Renderer: Mobile (unchanged from the generated project).
 
-**Main scene (`scenes/main/main.tscn`, no scripts):**
+**Main scene (`scenes/main/main.tscn`, root script `scripts/core/pancake_stack.gd`):**
 
 ```text
-Main (Node2D)
+Main (Node2D, pancake_stack.gd)
 ├── Background (CanvasLayer, layer -1)
 │   └── BackgroundColor (ColorRect, full-screen)
 ├── GameplayArea (ColorRect, placeholder, 600x960 at 60,160)
-└── Pancake (instance of scenes/gameplay/pancake.tscn, at y=640)
-    └── Movement (Node; movement_area set to GameplayArea)
+├── Pancake (stationary base instance of scenes/gameplay/pancake.tscn, at y=640)
+│   └── Movement (Node; autostart = false, movement_area set to GameplayArea)
+└── Runtime Pancake instances (one active moving pancake, spawned by pancake_stack.gd)
 ```
 
 - The background sits on its own CanvasLayer so it stays fixed on screen and covers any window shape; this keeps it unaffected by a camera added later.
-- `GameplayArea` is a visual placeholder only. Its position and size are not final design decisions and carry no gameplay meaning yet.
-- The `Pancake` instance moves back and forth across `GameplayArea` (TASK-003). The movement script sets its starting x, so the x in its `position` is not used. The instance has editable children enabled so that its `Movement` node's `movement_area` can point at `GameplayArea`. Later tasks will replace it or spawn pancakes in code.
-- No scene structure change was needed for TASK-004: the existing `Movement` child already owns the `moving` state and is separate from the `Visual` node, so it can handle placement input directly.
+- `GameplayArea` is a visual placeholder only. Its position and size are not final design decisions and carry no gameplay meaning yet, except that the movement component uses it for horizontal limits.
+- The `Pancake` instance in the scene is now the stationary base. Its `Movement.autostart` is `false`, and the controller also clears `moving` on ready. The instance keeps editable children so its `Movement.movement_area` points at `GameplayArea`.
+- No scene structure change was needed for TASK-004: the existing `Movement` child already owns the `moving` state and is separate from the `Visual` node, so it can handle placement input directly. TASK-008 attached a small controller to `Main` for spawning/progression only; it did not move input into the controller.
+
+**Spawn controller (`scripts/core/pancake_stack.gd`, TASK-008):**
+
+- Attached to `Main`. It coordinates spawning and progression only; it does not calculate overlap, resize/reposition a placed pancake itself, handle input, score, or manage game over.
+- On ready it calls `PancakeMovement.reset_start_sequence()` so a fresh game starts its first moving pancake on the left, keeps the scene's `Pancake` as the stationary base, and spawns one moving pancake.
+- `PANCAKE_SCENE` is preloaded from `res://scenes/gameplay/pancake.tscn`. A successor inherits the current support's gameplay width, height and colour, and is spawned at the support's absolute centre, one pancake height above it. `Movement.start()` then repositions it to the next alternating side and starts it.
+- It detects placement by watching the active `Movement.moving` state change from `true` to `false`; TASK-004 input still performs the stop. The controller then calls `PancakeOverlap.calculate()` against the current support, applies the result with `apply_overlap_result()`, and promotes that pancake to support before spawning exactly one successor.
+- A complete miss clears the active pancake and spawns nothing. The missed pancake remains stopped where it was. No game-over, restart, camera, scoring or difficulty behaviour is present.
+- Only one pancake is started at a time; the base and all previously placed pancakes have `moving == false`.
 
 **Pancake scene (`scenes/gameplay/pancake.tscn`, scripts `scripts/gameplay/pancake.gd` and `scripts/gameplay/pancake_movement.gd`):**
 
@@ -242,7 +252,7 @@ Pancake (Node2D, pancake.gd)
 - **Motion:** x advances by `speed * delta` and the result is folded back between the limits, as if the pancake bounced off them. The direction reverses when a bounce happens. Because of the folding, the result is the same at any frame rate and for any frame time.
 - **Configuration:** `speed` (pixels per second, exported, default 250), `autostart` (exported, default true: start moving when ready) and the `moving` variable (set it to false to stop the pancake in place, true to carry on from there). `start()` places the pancake on its starting side and starts it. Without a `movement_area` the pancake does not move and a warning is shown.
 - **Placement input (TASK-004):** `_input(event)` stops the pancake on a left mouse press (`InputEventMouseButton` with `button_index == MOUSE_BUTTON_LEFT` and `pressed`) or the first touch press (`InputEventScreenTouch` with `index == 0` and `pressed`). It acts only while `moving` is true, clears `moving`, and does not touch the position. Mouse release, right clicks, secondary touches and input while stopped are ignored. Because stopping is idempotent, a mouse event emulated from a touch cannot stop the pancake twice. No new node, manager or signal was added.
-- **Alternating start sides:** a counter shared by all pancakes (`_started_count`) is advanced each time a pancake starts. Starts number 1, 3, 5, ... place the pancake at its left limit moving right; starts 2, 4, 6, ... place it at its right limit moving left. It is about each newly started pancake, not about reversals at the boundaries: once moving, every pancake reverses on its own. A pancake with `autostart = false` does not use a turn. The static function `reset_start_sequence()` makes the next pancake start on the left; nothing calls it yet. Because the counter lives as long as the game process, a run restart must call it, otherwise the sequence carries on from the previous run (TASK-014 will need this; TASK-004 is placement input only).
+- **Alternating start sides:** a counter shared by all pancakes (`_started_count`) is advanced each time a pancake starts. Starts number 1, 3, 5, ... place the pancake at its left limit moving right; starts 2, 4, 6, ... place it at its right limit moving left. It is about each newly started pancake, not about reversals at the boundaries: once moving, every pancake reverses on its own. A pancake with `autostart = false` does not use a turn. The static function `reset_start_sequence()` makes the next pancake start on the left; TASK-008's controller calls it once during fresh game setup. Because the counter lives as long as the game process, a later restart system must also call it, otherwise the sequence carries on from the previous run (TASK-014 will need this). TASK-008 does not add a restart system.
 - **Provisional values:** `speed = 250` px/s is a temporary default, not a final design decision (GDD section 16, items 2 to 4).
 
 **Overlap calculation (`scripts/gameplay/pancake_overlap.gd`, TASK-005):**
@@ -255,9 +265,9 @@ Pancake (Node2D, pancake.gd)
   - `"is_complete_miss"` (`bool`): `true` when `overlap_width <= 0`.
   - `"overlap_width"` (`float`): the raw signed result, so separated pancakes return a negative value and edge-touching returns `0`.
   - `"overlap_center_x"` (`float` or `null`): the absolute centre in the shared gameplay coordinate system, `(overlap_left + overlap_right) / 2` (equivalently `overlap_left + overlap_width / 2`) when an overlap exists, otherwise `null`.
-- It is not attached to any scene node and changes no scene structure. Applying the result to a pancake is implemented by `Pancake.apply_overlap_result()` in TASK-007; spawning the next pancake with inherited width and support reference remains TASK-008.
+- It is not attached to any scene node and changes no scene structure. Applying the result to a pancake is implemented by `Pancake.apply_overlap_result()` in TASK-007; spawning the next pancake with inherited width and support reference is implemented by `PancakeStack` in TASK-008.
 
-**Folders in use:** `scenes/main/`, `scenes/gameplay/`, `scripts/gameplay/`, `docs/`. Other folders in section 3 are created when a task needs them.
+**Folders in use:** `scenes/main/`, `scenes/gameplay/`, `scripts/core/`, `scripts/gameplay/`, `docs/`. Other folders in section 3 are created when a task needs them.
 
 ---
 
