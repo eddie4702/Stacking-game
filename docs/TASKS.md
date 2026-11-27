@@ -11,7 +11,7 @@
 ## Milestone 1 — Project foundation
 
 ### TASK-001 — Create the Godot project foundation
-**Status:** REVIEW
+**Status:** DONE
 
 **Goal:** Create a minimal, runnable Godot 4 project with a portrait-oriented main scene and a clean initial directory structure.
 
@@ -42,14 +42,14 @@
 
 **Deliverable:** A runnable project foundation and a report of files created and tests performed.
 
-**Result (2026-11-26):** Implemented and awaiting owner review.
+**Result (2026-11-26):** Reviewed and tested in the Godot editor by the project owner, then merged into `main`.
 - `project.godot` configured: 720x1280 portrait viewport, portrait handheld orientation, 405x720 desktop window override, main scene set. Existing stretch settings (`canvas_items` / `expand`) left unchanged.
 - `scenes/main/main.tscn` created: solid placeholder background plus a placeholder gameplay area. No scripts.
-- Tested with Godot 4.7-stable: project imports and runs headless with no errors or warnings; a software-rendered screenshot was inspected at several window sizes. Not tested on a real GPU, in the Godot editor UI, in a browser, or on a mobile device.
+- Claude tested with Godot 4.7-stable: project imports and runs headless with no errors or warnings; a software-rendered screenshot was inspected at several window sizes. Claude did not test on a real GPU, in the Godot editor UI, in a browser, or on a mobile device.
 - Known issues and items to verify manually are listed in the TASK-001 completion report and in `docs/CHANGELOG.md`.
 
 ### TASK-002 — Create a reusable pancake scene
-**Status:** PLANNED
+**Status:** REVIEW
 
 **Goal:** Create one simple reusable pancake placeholder scene.
 
@@ -63,6 +63,14 @@
 - Pancake scene can be instanced in the main scene.
 - Its visual dimensions are easy to inspect and adjust.
 - No unrelated gameplay logic is included.
+
+**Result (2026-11-26):** Implemented and awaiting owner review.
+- `scenes/gameplay/pancake.tscn` created: `Pancake` (Node2D, script `scripts/gameplay/pancake.gd`) with one child, `Visual` (ColorRect).
+- `width`, `height` (pixels) and `color` are exported, so they can be set in the Inspector or from code. The script is `@tool`, so the scene also updates in the editor. Negative sizes are clamped to 0.
+- The node's origin is the centre of the pancake. Defaults are 300x40 and a golden colour; these are placeholders, not design decisions (GDD section 16, item 1 is still undecided).
+- One default pancake is instanced in `scenes/main/main.tscn` at (360, 640) as a static placeholder.
+- No movement, input, stacking, overlap, cutting, scoring, difficulty, camera, physics or game-state code.
+- Automated tests with Godot 4.7-stable passed (see `docs/CHANGELOG.md`). Still to verify manually in the Godot editor: Inspector editing and live preview of `width`, `height` and `color`.
 
 ---
 
@@ -336,6 +344,6 @@ These tasks must be separately designed and approved:
 
 ## Current authorization
 
-**TASK-001 is implemented and awaiting owner review.** No other task is authorized.
+**TASK-001 is DONE. TASK-002 is implemented and awaiting owner review.** No other task is authorized.
 
-Do not start TASK-002 or any later task until the project owner reviews the completed foundation and explicitly approves the next step.
+Do not start TASK-003 or any later task until the project owner reviews TASK-002 and explicitly approves the next step.
