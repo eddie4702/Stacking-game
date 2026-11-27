@@ -5,6 +5,19 @@ Record meaningful project changes here, newest first. Keep entries concise and f
 
 ---
 
+## 2026-11-26 — TASK-003: Pancake movement (awaiting review)
+
+- Added `scripts/gameplay/pancake_movement.gd` (plus its generated `.uid`) and a `Movement` child node in `scenes/gameplay/pancake.tscn`. `pancake.gd` is unchanged.
+- The pancake moves horizontally within `GameplayArea` (exported `movement_area`) using its current width, reversing at the edges. Based on `delta`; no physics. Exports: `movement_area`, `speed` (250 px/s, provisional), `autostart`; plus a `moving` flag.
+- Alternating start sides (extra requirement confirmed by the project owner): each pancake that starts moving takes the next side through a shared counter: left moving right, then right moving left, and so on. `reset_start_sequence()` restarts it; nothing calls it yet. This overlaps the scope of TASK-004, which was left unchanged for the owner to re-scope (a note was added to it).
+- `scenes/main/main.tscn`: wired `Movement.movement_area` to `GameplayArea` (editable children). Removed the instance's `width = 600.0` override, which was as wide as the whole area, so the pancake had no room to move; the default width 300 applies. Restore it if it was deliberate.
+- Automated tests (Godot 4.7-stable, headless): syntax check, import, project run and editor-mode load all clean. A 59-check script stepping the movement by hand passed, covering the 10 test items: start side and direction, reversal at both edges, alternation over 10 pancakes, staying inside the area for many widths with random frame times, identical results at 10 to 1000 fps and for one huge step, width changes while moving, independent pancakes, offset parents, and no input/stacking/scoring code. Breaking the script six different ways made the tests fail each time (two gaps found and closed this way). The real main scene was also run with Godot's own frame loop at 20, 30, 60, 144 and 240 fps: every frame matched the expected position for the real elapsed time (max error 0.005 px) and both reversals happened at the boundaries. Screenshots were inspected.
+- Not verified: running the game in the Godot editor, the `Movement` Inspector properties, a real GPU, a browser, a mobile device.
+- Notes: under `--fixed-fps` Godot delivers irregular frame times for the first frames, so tests compared against the real deltas. A pancake exactly as wide as the area (or wider) stays centred and does not move.
+- Not implemented: input, dropping, stacking, overlap, cutting, scoring, difficulty, camera, game over or restart, physics, art. TASK-004 has not been started.
+
+---
+
 ## 2026-11-26 — TASK-002: Reusable pancake scene (awaiting review)
 
 - Added `scenes/gameplay/pancake.tscn` and `scripts/gameplay/pancake.gd` (plus Godot's generated `pancake.gd.uid`): a `Pancake` Node2D with a `Visual` ColorRect child. Exported `width`, `height` (px) and `color`; `@tool` so the editor shows changes. Origin is the pancake's centre. Defaults 300x40 are placeholders.

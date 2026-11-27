@@ -77,7 +77,7 @@
 ## Milestone 2 — Movement and input
 
 ### TASK-003 — Implement horizontal pancake movement
-**Status:** PLANNED
+**Status:** REVIEW
 
 **Goal:** Move one pancake smoothly from side to side within defined horizontal boundaries.
 
@@ -93,6 +93,14 @@
 - Direction reversal is reliable.
 - Movement speed can be adjusted without editing core logic.
 
+**Result (2026-11-26):** Implemented and awaiting owner review.
+- `scripts/gameplay/pancake_movement.gd` created and added as a `Movement` child node in `scenes/gameplay/pancake.tscn`. `pancake.gd` is unchanged.
+- The pancake moves back and forth within `GameplayArea` (set through the exported `movement_area`), using its current `width` so the whole pancake stays inside, and reverses at the edges. Movement uses `delta`; no physics.
+- `speed` is exported: 250 px/s. This is a provisional default, not a final design decision (GDD section 16, items 2 to 4 are still undecided).
+- Alternating start sides, an extra requirement confirmed by the project owner for this task: the first pancake starts on the left and moves right, the second starts on the right and moves left, and so on. This overlaps TASK-004 (see the note there).
+- `scenes/main/main.tscn`: `Movement` is wired to `GameplayArea`. The instance's `width = 600.0` override (as wide as the whole area, so no room to move) was removed; the default 300 applies.
+- Automated tests with Godot 4.7-stable passed (see `docs/CHANGELOG.md`). Still to verify manually in the Godot editor: running the game and watching the pancake, and the `Movement` node's Inspector properties on the main-scene instance.
+
 ### TASK-004 — Implement alternating direction
 **Status:** PLANNED
 
@@ -106,6 +114,8 @@
 **Acceptance criteria:**
 - Direction alternates reliably.
 - Restarting a run resets direction consistently.
+
+**Note (2026-11-26):** Alternating the starting side of newly started pancakes was implemented in TASK-003 at the project owner's request. The scope of this task is to be confirmed by the project owner before it starts.
 
 ### TASK-005 — Implement drop input
 **Status:** PLANNED
@@ -344,6 +354,6 @@ These tasks must be separately designed and approved:
 
 ## Current authorization
 
-**TASK-001 is DONE. TASK-002 is implemented and awaiting owner review.** No other task is authorized.
+**TASK-003 is implemented and awaiting owner review.** TASK-002 is merged into `main` but still marked REVIEW; its status is left for the project owner to confirm. No other task is authorized.
 
-Do not start TASK-003 or any later task until the project owner reviews TASK-002 and explicitly approves the next step.
+Do not start TASK-004 or any later task until the project owner reviews TASK-003 and explicitly approves the next step.
