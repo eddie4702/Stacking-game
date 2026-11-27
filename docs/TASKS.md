@@ -191,7 +191,7 @@
 - No graphical UI changes; manual visual confirmation in the Godot editor is still recommended. No new task is authorized by this result.
 
 ### TASK-008 — Spawn the next pancake
-**Status:** REVIEW
+**Status:** DONE
 
 **Goal:** Spawn and activate the next moving pancake after a successful placement, using the most recently placed pancake as the width and support reference.
 
@@ -211,13 +211,14 @@
 - Its starting position and direction are correct.
 - No duplicate active pancakes are created.
 
-**Result (2026-11-27):** Implemented and awaiting owner review.
+**Result (2026-11-27):** Reviewed, manually tested in Godot, approved and merged into `main`.
 - Added `scripts/core/pancake_stack.gd` (plus its generated `.uid`) and attached it to `Main`. The existing `Pancake` instance in `main.tscn` is now the stationary base: its `Movement.autostart` is `false`. `pancake_movement.gd` gained `class_name PancakeMovement` so the controller can reference the movement type and reset the shared start-side counter.
 - On ready, the controller resets the start sequence, then spawns and starts one moving pancake from the base. Placement is detected by watching the active `Movement.moving` state change from `true` to `false`, reusing TASK-004 input without a second input path.
 - On a successful placement the controller calls `PancakeOverlap.calculate()` against the current support, applies the result with `apply_overlap_result()`, promotes the placed pancake to support, and spawns exactly one successor. A complete miss stops the pancake and spawns nothing; no game-over behaviour was added.
 - Each successor inherits the latest placed pancake's actual gameplay width, height, colour and absolute centre. The inherited centre is assigned to the new root before `Movement.start()` applies the existing alternating starting-side behaviour. The new pancake is spawned one pancake height above the support.
 - Automated tests with Godot 4.7.2-stable passed: syntax checks, project import and a headless main-scene run were clean. A temporary 49-check harness verified pre-start width/centre/height inheritance, three consecutive successful placements (150 @ 125, then 125 @ 112.5, then 122.5 @ 111.25), immediate-support promotion, exactly one successor per placement, alternating left/right start sides, one moving pancake at a time, stationary placed pancakes, and no spawn after a complete miss. The harness was deleted.
-- Not implemented: scoring, perfect placement, game over, restart, camera, difficulty, new visuals or overlap mathematics. Real mouse/touch play, editor/GPU visuals, browser and mobile builds remain unverified.
+- Owner review and manual Godot testing passed: consecutive placements each produced exactly one successor with width and centre inherited from the immediately preceding placed pancake. On a complete miss, the pancake stopped and no successor spawned; no game-over behaviour was triggered.
+- Not implemented: scoring, perfect placement, game over, restart, camera, difficulty, new visuals or overlap mathematics. Browser and mobile builds remain unverified.
 
 ---
 
@@ -387,6 +388,6 @@ These tasks must be separately designed and approved:
 
 ## Current authorization
 
-**TASK-007 is DONE. TASK-008 is in REVIEW.** TASK-001 to TASK-005 are DONE. TASK-009 and later tasks remain PLANNED and are not authorized.
+**TASK-001 through TASK-008 are DONE.** TASK-009 and later tasks remain PLANNED and are not authorized.
 
 Do not start TASK-009 or any later task until the project owner explicitly authorizes it.
