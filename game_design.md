@@ -96,6 +96,10 @@ When the player taps or clicks, the moving pancake immediately stops and begins 
 
 The game compares its horizontal position and width with the pancake directly underneath it.
 
+A stationary base pancake exists at the bottom of the stack. The player never moves or places this pancake. It supports the first moving pancake. Its initial width and position remain configurable.
+
+After the first placement, the support is always the immediately preceding placed pancake, not the original base pancake.
+
 ### 5.2 Overlap Calculation
 
 There are three possible outcomes:
@@ -128,11 +132,17 @@ The game must not simply hide the overhanging section while retaining the origin
 
 All subsequent placements must use the actual remaining dimensions.
 
+The first moving pancake inherits the base pancake's width. Every subsequent moving pancake inherits the width of the most recently placed pancake. Width must never reset to the original base width, so each placement can progressively reduce the width of the stack.
+
+Every overlap calculation uses the actual position and width of the immediately preceding placed pancake. The overlap calculation returns the new centre in the shared gameplay coordinate system; this absolute centre must be preserved for subsequent placements.
+
 ### 5.4 Stack Growth
 
 Each successful placement increases the stack height.
 
 The stack should remain visually aligned and centered around its actual calculated positions.
+
+A placed pancake's Node2D root uses the absolute centre returned by the overlap calculation. Its visual is centred around that root. A centre measured from the surviving pancake's own left edge is only a local value and must not be used as the gameplay X position.
 
 As the tower grows, the camera must keep the active stacking area visible.
 

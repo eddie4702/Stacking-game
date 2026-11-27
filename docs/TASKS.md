@@ -133,8 +133,10 @@
 
 > Roadmap note (2026-11-27): the former TASK-006 overlap task was merged into TASK-005. Later task numbers are retained to avoid rewriting existing IDs. TASK-007 remains the separate overhang-application task if cutting is not folded into TASK-005.
 
+> Confirmed stacking reference (2026-11-27): the stationary base pancake supports only the first moving pancake. After that, the immediately preceding placed pancake supplies both the width to inherit and the absolute centre and width used as the support reference.
+
 ### TASK-005 — Implement Pancake Overlap Calculation
-**Status:** REVIEW
+**Status:** DONE
 
 **Goal:** Deterministically calculate the horizontal overlap between the pancake the player has just stopped and the supporting pancake directly beneath it.
 
@@ -163,33 +165,44 @@
 ### TASK-007 — Apply the cut-off result
 **Status:** PLANNED
 
-**Goal:** Update the placed pancake so only the overlapping portion remains.
+**Goal:** Apply the overlap result to the placed pancake so only the overlapping portion remains.
 
 **Scope:**
-- Update the pancake's actual visual dimensions and position.
+- Update the pancake's actual gameplay width to the calculated overlap width.
+- Update its absolute horizontal centre in the shared gameplay coordinate system to the calculated overlap centre.
+- Ensure the `Visual` remains centred around the `Node2D` root; a local centre measured from the surviving pancake's own left edge is not the root position.
 - Ensure its gameplay dimensions match its visible dimensions.
 - Preserve the correct stack alignment.
 - Do not rely on hiding overhang while retaining the original dimensions.
 
+**Out of scope:** Spawning the next pancake, scoring, and perfect-placement detection.
+
 **Acceptance criteria:**
 - Partial placements visibly retain only the overlap.
-- The resulting pancake becomes the reference for the next placement.
-- Repeated placements use the updated dimensions correctly.
+- The resulting pancake's width equals the overlap width and its root X equals the overlap's absolute centre.
+- The visual remains centred around the Node2D root.
+- The resulting pancake becomes the support reference for the next placement.
+- Repeated placements use the updated width and absolute centre correctly.
 
 ### TASK-008 — Spawn the next pancake
 **Status:** PLANNED
 
-**Goal:** Create and activate the next moving pancake after a successful placement.
+**Goal:** Spawn and activate the next moving pancake after a successful placement, using the most recently placed pancake as the width and support reference.
 
 **Scope:**
 - Spawn one new pancake at the correct height.
-- Set its width based on the previous placement result.
+- Inherit its width from the most recently placed pancake; do not reset to the original base pancake's width.
+- Use the most recently placed pancake's actual absolute centre and width as the support reference for the next overlap calculation; do not keep using the original base pancake's position.
 - Start it moving in the next alternating direction.
 - Prevent more than one active moving pancake at a time.
 
+**Out of scope:** Scoring, perfect-placement bonuses and game-over handling (assigned to TASK-009, TASK-010 and TASK-013 respectively).
+
 **Acceptance criteria:**
 - Every successful placement produces exactly one next pancake.
-- Its dimensions and starting position are correct.
+- Its width equals the most recently placed pancake's width and is never reset to the original base width.
+- Successive overlap calculations use the most recently placed pancake's actual absolute centre and width, not the original base pancake's.
+- Its starting position and direction are correct.
 - No duplicate active pancakes are created.
 
 ---
