@@ -5,7 +5,17 @@ Record meaningful project changes here, newest first. Keep entries concise and f
 
 ---
 
-## 2026-11-27 — TASK-005: Pancake overlap calculation (awaiting review)
+## 2026-11-27 — Documentation clarification: stacking coordinates and inheritance
+
+- Clarified in `game_design.md` and `docs/TECHNICAL_DESIGN.md` that a stationary, configurable base pancake supports the first moving pancake; the player never moves or places it.
+- Documented that only the overlapping portion survives, with width equal to `overlap_width` and absolute centre in the shared gameplay coordinate system equal to `overlap_center_x = overlap_left + overlap_width / 2`. The Node2D root uses this absolute centre and the visual remains centred around it.
+- Recorded the base example (edges `X = 0..200`, centre `X = 100`; overlap `X = 50..200` gives width `150`, midpoint offset from the surviving pancake's left edge `75`, absolute centre `X = 125`) and the rule that the next moving pancake inherits width `150` and uses the placed pancake at `X = 125` as support, not the base at `X = 100`.
+- Clarified in `docs/TASKS.md` that TASK-007 applies the cut result (actual width, absolute centre and visual alignment) while TASK-008 spawns the next pancake with width and support reference inherited from the most recently placed pancake. No task IDs were created or renumbered.
+- Documentation only: no GDScript, scenes, resources, project settings or gameplay behaviour were changed. No new gameplay functionality is implemented by this clarification.
+
+---
+
+## 2026-11-27 — TASK-005: Pancake overlap calculation (merged)
 
 - Added `scripts/gameplay/pancake_overlap.gd` (plus Godot's generated `.uid`): a `RefCounted` utility with one static `calculate(moving_center_x, moving_width, support_center_x, support_width)` function. It uses only gameplay centre positions and widths; it does not read scene nodes, the `Visual` ColorRect, physics or global state.
 - Result format is a three-key Dictionary: `is_complete_miss` (`true` when overlap width <= 0), raw signed `overlap_width` (negative when separated, zero when touching), and `overlap_center_x` (midpoint when overlapping, otherwise `null`).
