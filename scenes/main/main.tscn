@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://dkmc1ot4mia2g"]
 
 [ext_resource type="PackedScene" path="res://scenes/gameplay/pancake.tscn" id="1_pancake"]
+[ext_resource type="Script" path="res://scripts/core/pancake_stack.gd" id="2_pancake_stack"]
 
 [node name="Main" type="Node2D" unique_id=128290110]
+script = ExtResource("2_pancake_stack")
 
 [node name="Background" type="CanvasLayer" parent="." unique_id=358166918]
 layer = -1
@@ -26,6 +28,7 @@ color = Color(1, 0.96, 0.88, 1)
 position = Vector2(360, 640)
 
 [node name="Movement" parent="Pancake" index="1" node_paths=PackedStringArray("movement_area")]
+autostart = false
 movement_area = NodePath("../../GameplayArea")
 
 [editable path="Pancake"]
