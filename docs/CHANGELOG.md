@@ -5,6 +5,16 @@ Record meaningful project changes here, newest first. Keep entries concise and f
 
 ---
 
+## 2026-11-27 — TASK-005: Pancake overlap calculation (awaiting review)
+
+- Added `scripts/gameplay/pancake_overlap.gd` (plus Godot's generated `.uid`): a `RefCounted` utility with one static `calculate(moving_center_x, moving_width, support_center_x, support_width)` function. It uses only gameplay centre positions and widths; it does not read scene nodes, the `Visual` ColorRect, physics or global state.
+- Result format is a three-key Dictionary: `is_complete_miss` (`true` when overlap width <= 0), raw signed `overlap_width` (negative when separated, zero when touching), and `overlap_center_x` (midpoint when overlapping, otherwise `null`).
+- No scene, node, project-setting, movement, input or visual changes. No cutting, spawning, scoring, perfect-placement tolerance, game-over, camera or physics code was added.
+- Automated tests (Godot 4.7.2-stable, headless): syntax check, import and project run clean. A temporary 63-check harness verified all nine required cases with exact numbers: exact alignment (300 @ 360), left overhang (240 @ 330), right overhang (240 @ 390), moving fully inside support (100 @ 400), moving fully covering support (300 @ 360), edge touch (0, miss), separation (-30, miss), cut/offset support (140 @ 430), and differing widths/centres (170 @ 385). A mutation replacing `maxf` with `minf` caused failures and was reverted. The temporary harness and its generated `.uid` were deleted.
+- Documentation: TASK-005 marked REVIEW and updated to the calculation-only scope; technical design records the implementation and result format. TASK-007 and TASK-008 remain unauthorised.
+
+---
+
 ## 2026-11-27 — TASK-004: Pancake placement input (approved, awaiting commit)
 
 - Added a small `_input()` handler to `scripts/gameplay/pancake_movement.gd`. A left mouse press or the first touch press clears `moving` and stops the pancake at its current position; the handler never changes the position. It acts only while the pancake is moving, and ignores mouse release, right clicks, secondary touches and input while stopped.

@@ -109,7 +109,9 @@ Interpretation:
 
 Gameplay coordinates and dimensions are the source of truth for these calculations. They must not be derived from visual node sizes, sprite bounds, physics bodies or 3D collisions, so the result is the same whatever the visual presentation.
 
-The exact coordinate representation and edge-case handling must be confirmed during implementation. Keep calculations independent enough to test with known input values.
+The exact coordinate representation and edge-case handling are confirmed in TASK-005 (see section 12). Keep calculations independent enough to test with known input values.
+
+**Implemented in TASK-005:** `scripts/gameplay/pancake_overlap.gd` provides a static, pure calculation. Perfect-placement tolerance, cutting, scoring and game-over handling are not part of this implementation.
 
 ## 6. Camera requirement
 
@@ -172,7 +174,7 @@ Do not silently change a documented gameplay rule.
 
 ## 12. Current implementation state
 
-Updated after TASK-004. Describes what exists now, not what is planned.
+Updated after TASK-005. Describes what exists now, not what is planned.
 
 **Display settings (`project.godot`):**
 
@@ -223,6 +225,18 @@ Pancake (Node2D, pancake.gd)
 - **Placement input (TASK-004):** `_input(event)` stops the pancake on a left mouse press (`InputEventMouseButton` with `button_index == MOUSE_BUTTON_LEFT` and `pressed`) or the first touch press (`InputEventScreenTouch` with `index == 0` and `pressed`). It acts only while `moving` is true, clears `moving`, and does not touch the position. Mouse release, right clicks, secondary touches and input while stopped are ignored. Because stopping is idempotent, a mouse event emulated from a touch cannot stop the pancake twice. No new node, manager or signal was added.
 - **Alternating start sides:** a counter shared by all pancakes (`_started_count`) is advanced each time a pancake starts. Starts number 1, 3, 5, ... place the pancake at its left limit moving right; starts 2, 4, 6, ... place it at its right limit moving left. It is about each newly started pancake, not about reversals at the boundaries: once moving, every pancake reverses on its own. A pancake with `autostart = false` does not use a turn. The static function `reset_start_sequence()` makes the next pancake start on the left; nothing calls it yet. Because the counter lives as long as the game process, a run restart must call it, otherwise the sequence carries on from the previous run (TASK-014 will need this; TASK-004 is placement input only).
 - **Provisional values:** `speed = 250` px/s is a temporary default, not a final design decision (GDD section 16, items 2 to 4).
+
+**Overlap calculation (`scripts/gameplay/pancake_overlap.gd`, TASK-005):**
+
+- A small `RefCounted` utility with one static function:
+  `PancakeOverlap.calculate(moving_center_x, moving_width, support_center_x, support_width)`.
+- It uses gameplay values only: absolute centre X and width in pixels. It does not receive or read nodes, the `Visual` ColorRect, physics bodies or global state.
+- It derives `left = center_x - width / 2` and `right = center_x + width / 2` for both pancakes, then uses `maxf` for `overlap_left`, `minf` for `overlap_right`, and `overlap_width = overlap_right - overlap_left`.
+- Return format is a Dictionary with three keys:
+  - `"is_complete_miss"` (`bool`): `true` when `overlap_width <= 0`.
+  - `"overlap_width"` (`float`): the raw signed result, so separated pancakes return a negative value and edge-touching returns `0`.
+  - `"overlap_center_x"` (`float` or `null`): `(overlap_left + overlap_right) / 2` when an overlap exists, otherwise `null`.
+- It is not attached to any scene node and changes no scene structure. Applying the result to a pancake remains TASK-007.
 
 **Folders in use:** `scenes/main/`, `scenes/gameplay/`, `scripts/gameplay/`, `docs/`. Other folders in section 3 are created when a task needs them.
 
